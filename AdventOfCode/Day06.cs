@@ -41,6 +41,8 @@ public static class Extensions
 
 public sealed class Day06 : BaseDay
 {
+    private List<Coordinate> _obstacles = [];
+    
     private List<Coordinate> obstacles = [];
     private Coordinate init;
     private int maxX;
@@ -90,13 +92,14 @@ public sealed class Day06 : BaseDay
         maxY = data.Length;
     }
 
-    private bool VisitRange(Coordinate start, Coordinate target, Direction direction)
+    private bool VisitRangeAndCheckForLoop(Coordinate start, Coordinate target, Direction direction)
     {
-        // var loop = routes.Add(Tuple.Create(start, target));
-        // if (loop)
-        // {
-        //     return true;
-        // }
+        var loop = !routes.Add(Tuple.Create(start, target));
+        if (loop)
+        {
+            Console.Write(true);
+            return true;
+        }
         
         if (direction is Direction.North or Direction.South)
         {
@@ -121,11 +124,11 @@ public sealed class Day06 : BaseDay
         return false;
     }
 
-    public void FromHereToNextObstacle(Coordinate here, Direction dir)
+    public bool FromHereToNextObstacle(Coordinate here, Direction dir)
     {
         if (here.y == -1 || here.x == -1 || here.y >= maxY || here.x >= maxX)
         {
-            return;
+            return false;
         }
 
         if (dir == Direction.North)
@@ -138,8 +141,12 @@ public sealed class Day06 : BaseDay
                 now = here with { y = stop.y + 1 };
             }
 
-            VisitRange(here, now, dir);
-            FromHereToNextObstacle(now, dir.Turn90());
+            if(VisitRangeAndCheckForLoop(here, now, dir))
+            {
+                Console.WriteLine("loop");
+                return true;
+            }
+            return FromHereToNextObstacle(now, dir.Turn90());
         }
 
         if (dir == Direction.East)
@@ -152,8 +159,12 @@ public sealed class Day06 : BaseDay
                 now = here with { x = stop.x - 1 };
             }
 
-            VisitRange(here, now, dir);
-            FromHereToNextObstacle(now, dir.Turn90());
+            if (VisitRangeAndCheckForLoop(here, now, dir))
+            {
+                Console.WriteLine("loop");
+                return true;
+            }
+            return FromHereToNextObstacle(now, dir.Turn90());
         }
 
         if (dir == Direction.South)
@@ -166,8 +177,12 @@ public sealed class Day06 : BaseDay
                 now = here with { y = stop.y - 1 };
             }
 
-            VisitRange(here, now, dir);
-            FromHereToNextObstacle(now, dir.Turn90());
+            if (VisitRangeAndCheckForLoop(here, now, dir))
+            {
+                Console.WriteLine("loop");
+                return true;
+            }
+            return FromHereToNextObstacle(now, dir.Turn90());
         }
 
         if (dir == Direction.West)
@@ -180,13 +195,20 @@ public sealed class Day06 : BaseDay
                 now = here with { x = stop.x + 1 };
             }
 
-            VisitRange(here, now, dir);
-            FromHereToNextObstacle(now, dir.Turn90());
+            if (VisitRangeAndCheckForLoop(here, now, dir))
+            {
+                Console.WriteLine("loop");
+                return true;
+            }
+            return FromHereToNextObstacle(now, dir.Turn90());
         }
+
+        throw new ArgumentException(dir.ToString());
     }
 
     public override ValueTask<string> Solve_1()
     {
+        obstacles = _obstacles.ToList();
         FromHereToNextObstacle(init, Direction.North);
         var res = visited.Count - 1;
 
@@ -195,7 +217,15 @@ public sealed class Day06 : BaseDay
 
     public override ValueTask<string> Solve_2()
     {
-        var res = 2;
+        for (int i = 0; i < maxY; i++)
+        {
+            for (int j = 0; j < maxX; j++)
+            {
+                
+            }
+        }
+
+        var res = 1;
         return new ValueTask<string>(res.ToString());
     }
 }
